@@ -1,0 +1,61 @@
+#include "aes.h"
+#include <cstring>
+#include <algorithm>
+#include <iostream>
+#include <vector>
+#include <iomanip>
+using namespace std;
+
+std::vector<uint8_t> aes_encrypt(const std::vector<uint8_t>& data, const std::vector<uint8_t>& key)
+{
+	AesEncryption aes(key);
+	return aes.encrypt(data);
+}
+
+std::vector<uint8_t> aes_decrypt(const std::vector<uint8_t>& data, const std::vector<uint8_t>& key)
+{
+	AesEncryption aes(key);
+	std::vector<uint8_t> decrypted_data = aes.encrypt(data);
+
+	// Remove padding
+	uint8_t padding = decrypted_data.back();
+	if (padding > decrypted_data.size())
+	{
+		return std::vector<uint8_t>();
+	}
+
+	decrypted_data.erase(decrypted_data.end() - padding, decrypted_data.end());
+
+	return decrypted_data;
+}
+int main()
+{
+	std::string plaintext = "FEBFBFF000306C3@@@M701GQFQ";
+	std::string key = "alex&ritzy";
+
+	// Convert plaintext and key to vectors of uint8_t
+	std::vector<uint8_t> plaintext_vec(plaintext.begin(), plaintext.end());
+	std::vector<uint8_t> key_vec(key.begin(), key.end());
+
+	// Encrypt plaintext
+	std::vector<uint8_t> ciphertext = aes_encrypt(plaintext_vec, key_vec);
+
+	// Decrypt ciphertext
+	std::vector<uint8_t> decrypted_text = aes_decrypt(ciphertext, key_vec);
+
+	// Convert decrypted_text back to a string
+	std::string decrypted_string(decrypted_text.begin(), decrypted_text.end());
+
+	// Print results
+	std::cout << "Plaintext: " << plaintext << std::endl;
+	std::cout << "Key: " << key << std::endl;
+	std::cout << "Ciphertext: ";
+	for (const auto& byte : ciphertext)
+	{
+		std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte);
+	}
+	std::cout << std::endl;
+	std::cout << "Decrypted text: " << decrypted_string << std::endl;
+
+	return 0;
+}
